@@ -13,3 +13,10 @@ ethernet cable between HVAC and rectifier board.  24VAC signal
 	 stage 2 (Y2) = brown = channel 2 = GPIO 10
 	 stage 3 - electric coils (W) = green = channel 3 = GPIO 11
 
+
+To get the program to run at boot:
+
+copy the hvac.service file to /etc/systemd/system
+set permissions to 644
+sudo systemctl enable hvac.service
+
