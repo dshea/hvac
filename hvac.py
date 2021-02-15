@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
 
-from gpiozero import Button, LED
+from gpiozero import Button
 from signal import pause
 from time import time, ctime, sleep
 import board
-import adafruit_dht
+import busio
+import adafruit_am2320
 
 from hvac_database import writeHvac
 
-stage1Pin = 9
-stage2Pin = 10
-stage3Pin = 11
-
-dhtPin = board.D5
-dhtRetry = 5
-dhtWait = 2.0
+stage1Pin = 17
+stage2Pin = 22
+stage3Pin = 27
 
 
 class Hvac():
@@ -24,7 +21,8 @@ class Hvac():
         self.stage = 0
         self.temperature = -100.0
         self.humidity = -100.0
-        self.dhtDevice = adafruit_dht.DHT11(dhtPin)
+        self.i2c = busio.I2C(board.SCL, board.SDA)
+        self.am2320 = adafruit_am2320.AM2320(self.i2c)
 
     def setStage(self, val):
         self.stage = val
@@ -33,16 +31,8 @@ class Hvac():
         print(ctime(time()), "Stage =", self.stage, "Temp =", self.temperature, "Humidity =", self.humidity)
 
     def readTemperature(self):
-        self.temperature = -100.0
-        self.humidity = -100.0
-        for i in range(dhtRetry):
-            try:
-                self.temperature = self.dhtDevice.temperature * (9.0 / 5.0) + 32.0
-                self.humidity = self.dhtDevice.humidity
-                break
-            except RuntimeError as error:
-                print(i, error.args[0])
-                sleep(dhtWait)
+        self.temperature = (self.am2320.temperature * 9.0 / 5.0) + 32.0
+        self.humidity = self.am2320.relative_humidity
 
 
 class HvacStage(Button):
