@@ -42,8 +42,9 @@ def writeHvac(stage, temperature, humidity):
 
 def makeJSON(time) :
     conn, c = openDatabase()
-    query =  c.execute('SELECT * FROM hvac  WHERE time > ? ORDER BY time', (time,)) 
-    print(json.dumps(query))
+    query =  c.execute('SELECT * FROM hvac  WHERE time > ? ORDER BY time', (time,))
+    rows = query.fetchall()
+    print(json.dumps(rows))
     conn.close()
 
 def dumpDatabase() :
