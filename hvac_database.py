@@ -44,8 +44,8 @@ def makeJSON(time) :
     conn, c = openDatabase()
     query =  c.execute('SELECT * FROM hvac  WHERE time > ? ORDER BY time', (time,))
     rows = query.fetchall()
-    print(json.dumps(rows))
     conn.close()
+    return json.dumps(rows)
 
 def dumpDatabase() :
     conn, c = openDatabase()
@@ -55,12 +55,11 @@ def dumpDatabase() :
     print("----", "-----", "-----------", "--------")
     for row in c.execute('SELECT * FROM hvac ORDER BY time'):
         print(row)
-
     conn.close()
 
-
 if __name__ == '__main__':
-    dumpDatabase()
-#    makeJSON(1554873300)
+#    dumpDatabase()
+    page = "http://shea.cc/hvac/add.php?json="
+    print(page + "\"" + makeJSON(1613059110) + "\"");
 
     
