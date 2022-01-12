@@ -6,13 +6,20 @@ from time import time, ctime, sleep
 import board
 import busio
 import adafruit_am2320
+import os.path
 
-from hvac_database import writeHvac
+from hvac_database import writeHvac, makeJSON
 
 stage1Pin = 17
 stage2Pin = 22
 stage3Pin = 27
 
+# number of seconds between JSON sends
+# 1hr * 60min * 60sec
+sendDelay = 1.0 * 60.0 * 60.0
+
+# file that stores the last time a JSON file was sent
+timeFileName = "lastJsonWrite.txt"
 
 class Hvac():
     """A class to track the HVAC cycling"""
@@ -51,6 +58,20 @@ class HvacStage(Button):
     def stageOff(self):
         self.hvac.setStage(self.stageNum - 1)
 
+def writeTimeFile(t):
+    with open(timeFileName, 'w') as f:
+        f.write(str(t))
+
+def readTimeFile():
+    timeVal = 0
+    if os.path.exists(timeFileName):
+        with open(timeFileName, 'r') as f:
+            val = f.read()
+            timeVal = float(val)
+    return timeVal
+
+def sendJson(jsonStr):
+    return True
 
 def run():
     hvac = Hvac()
@@ -58,13 +79,26 @@ def run():
     stage2 = HvacStage(hvac, 2, stage2Pin)
     stage3 = HvacStage(hvac, 3, stage3Pin)
 
-# pause loops for ever
-#    pause()
+    # last time JSON sent to server
+    lastSendTime = readTimeFile()
+
+    # pause loops forever
+    #    pause()
     tick = 0
     while(True):
         sleep(5)
         #print("tick", tick)
         tick += 1
+
+        t1 = time()
+        if(t1 - lastSendTime > sendDelay):
+            jsonStr = makeJSON(lastSendTime)
+            if(sendJson(jsonStr)):
+                lastSendTime = t1
+                writeTimeFile(lastSendTime)
+        
+        
+
 
 
 if __name__ == '__main__':
