@@ -8,18 +8,22 @@ import busio
 import adafruit_am2320
 import os.path
 
-from hvac_database import writeHvac, makeJSON
+from hvacDatabase import writeHvac, makeJson
+from sendJson import uploadJson, buildAuth
 
 stage1Pin = 17
 stage2Pin = 22
 stage3Pin = 27
 
-# number of seconds between JSON sends
-# 1hr * 60min * 60sec
-sendDelay = 1.0 * 60.0 * 60.0
-
 # file that stores the last time a JSON file was sent
 timeFileName = "lastJsonWrite.txt"
+
+# read from JSON config file
+uploadUser = ""
+uploadPassword = ""
+uploadUrl = ""
+uploadDelay = 3600
+uploadFilename = ""
 
 class Hvac():
     """A class to track the HVAC cycling"""
@@ -58,6 +62,19 @@ class HvacStage(Button):
     def stageOff(self):
         self.hvac.setStage(self.stageNum - 1)
 
+def readConfigFile():
+    global uploadUser, uploadPassword, uploadUrl, uploadDelay, uploadFilename
+    import json
+    configFileName = "config.json"
+    if os.path.exists(configFileName):
+        with open(configFileName, 'r') as f:
+            config = json.load(f)
+            uploadUser = config.get("upload_user", "")
+            uploadPassword = config.get("upload_password", "")
+            uploadUrl = config.get("upload_url", "")
+            uploadDelay = config.get("upload_delay", 3600)
+            uploadFilename = config.get("upload_filename", "hvac_upload.json")
+
 def writeTimeFile(t):
     with open(timeFileName, 'w') as f:
         f.write(str(t))
@@ -71,9 +88,21 @@ def readTimeFile():
     return timeVal
 
 def sendJson(jsonStr):
+
+    # write JSON string to file
+    with open(uploadFilename, 'w') as file:
+        file.write(jsonStr)
+
+    auth = buildAuth(f"{uploadUser}:{uploadPassword}")
+    try:
+        resp = uploadJson(uploadFilename, uploadUrl, method="post", auth=auth, retries=3, timeout=30)
+    except Exception as e:
+        return False
     return True
 
 def run():
+    readConfigFile()
+
     hvac = Hvac()
     stage1 = HvacStage(hvac, 1, stage1Pin)
     stage2 = HvacStage(hvac, 2, stage2Pin)
@@ -91,15 +120,11 @@ def run():
         tick += 1
 
         t1 = time()
-        if(t1 - lastSendTime > sendDelay):
-            jsonStr = makeJSON(lastSendTime)
+        if(t1 - lastSendTime > uploadDelay):
+            jsonStr = makeJson(lastSendTime)
             if(sendJson(jsonStr)):
                 lastSendTime = t1
                 writeTimeFile(lastSendTime)
-        
-        
-
-
 
 if __name__ == '__main__':
     run()

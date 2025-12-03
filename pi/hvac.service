@@ -5,7 +5,7 @@ After=multi-user.target
 [Service]
 Type=idle
 ExecStart=/usr/bin/python3 hvac.py
-WorkingDirectory=/home/pi/hvac/pi
+WorkingDirectory=/home/pi/hvac
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

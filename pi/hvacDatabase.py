@@ -9,6 +9,7 @@ import os
 import time
 import sqlite3
 import json
+import sys
 
 # database stuff
 db_filename = "hvac.db"
@@ -40,7 +41,7 @@ def writeHvac(stage, temperature, humidity):
     conn.commit()
     conn.close()
 
-def makeJSON(time) :
+def makeJson(time) :
     conn, c = openDatabase()
     query =  c.execute('SELECT * FROM hvac  WHERE time > ? ORDER BY time', (time,))
     rows = query.fetchall()
@@ -58,8 +59,10 @@ def dumpDatabase() :
     conn.close()
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 :
+        db_filename = sys.argv[1]
+
+#    print(makeJson(1613064675))
     dumpDatabase()
-#    page = "http://shea.cc/hvac/readJson.php?json="
-#    print(page + "\"" + makeJSON(1613059110) + "\"");
 
     

@@ -1,7 +1,7 @@
 <?php
 
 // global variable for printing error messages
-$debug = False;
+$debug = false;
 
 function log_msg($msg) {
   global $debug;
@@ -18,7 +18,7 @@ class HvacDB extends SQLite3 {
 }
 
 function open_database() {
-  $db = FALSE;
+  $db = false;
   if(file_exists('hvac.db')) {
     $db = new HvacDB();
   } else {
@@ -41,30 +41,34 @@ EOF;
   return $db;
 }
 
+function close_database($db) {
+  $db->close();
+}
+
 function add_record($db, $rec) {
   if(count($rec) != 4) {
-    log_msg("Bad num elements - " . $rec);
-    return False;
+    log_msg("Bad num elements - " . implode(",", $rec));
+    return false;
   }
 
   if(!is_int($rec[0])) {
-    log_msg("0 not int - " . $rec);
-    return False;
+    log_msg("0 not int - " . implode(",", $rec));
+    return false;
   }
 
   if(!is_int($rec[1])) {
-    log_msg("1 not int - " . $rec);
-    return False;
+    log_msg("1 not int - " . implode(",", $rec));
+    return false;
   }
 
   if(!is_float($rec[2])) {
-    log_msg("2 not float - " . $rec);
-    return False;
+    log_msg("2 not float - " . implode(",", $rec));
+    return false;
   }
 
   if(!is_float($rec[3])) {
-    log_msg("3 not float - " . $rec);
-    return False;
+    log_msg("3 not float - " . implode(",", $rec));
+    return false;
   }
 
   $sql = sprintf("INSERT INTO hvac (time,stage,temperature,humidity) \n VALUES (%d, %d, %f, %f);\n",
@@ -73,45 +77,37 @@ function add_record($db, $rec) {
   $ret = $db->exec($sql);
   if(!$ret) {
     log_msg($db->lastErrorMsg() . " - " . implode(",", $rec));
-    return False;
+    if(strpos($db->lastErrorMsg(), 'UNIQUE constraint failed') !== false) {
+      // ignore duplicate primary key errors
+      return true;
+    }
+    return false;
   }
-  return True;
+  return true;
 }
 
 function add_json($db, $json_str) {
   $data = json_decode($json_str);
-  log_msg("num records = " . count($data));
+  if(!is_array($data)) {
+    log_msg("json is not an array");
+    return false;
+  }
 
-  $ret = True;
+  $ret = true;
   // loop json string
   foreach($data as $rec) {
     if(!add_record($db, $rec)) {
-      $ret = False;
+      $ret = false;
     }
   }
+
+  if ($ret === true) {
+    log_msg("add num records = " . count($data));
+  } else {
+    log_msg("adding records failed");
+  } 
+
   return $ret;
 }
 
-// current directory
-echo "cwd=", getcwd(), "<br>";
-
-// open database
-$db = open_database();
-
-// add json records to the database
-if (isset($_GET['json'])) {
-  $ret = add_json($db, $_GET['json']);
-  if($ret) {
-    echo "Done!";
-  } else {
-    echo "Almost Good.";
-  }
-} else {
-  echo "Swell.";
-}
-
-// close database
-$db->close();
-
 ?>
-

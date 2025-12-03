@@ -1,0 +1,8 @@
+{
+    "upload_user": "don",
+    "upload_password": "stuff",
+    "upload_url": "http://localhost:8000/uploadJson.php",
+    //"upload_url": "http://shea.cc/hvac/uploadJson.php",
+    "upload_delay": 3600,
+    "upload_filename": "hvac_upload.json"
+}

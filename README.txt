@@ -20,3 +20,21 @@ copy the hvac.service file to /etc/systemd/system
 set permissions to 644
 sudo systemctl enable hvac.service
 
+
+DEVELOPENT
+
+- to start a web server to test out the PHP
+
+cd web
+php -S localhost:8000
+
+web page used to upload file
+http://localhost:8000/uploadJson.php
+
+http://localhost:8000/uploadTest.php
+
+
+python command to upload file
+
+./sendJson.py -f junk.json -u http://localhost:8000/uploadTest.php --auth don:stuff
+
