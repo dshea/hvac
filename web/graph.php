@@ -32,6 +32,15 @@ function aggrigateStage($timeWindow, $index, &$times, &$stages, &$stagesTimeOn) 
         }
     }
 
+    // start at stage = 0
+    // for (; $i >= 0; $i--) {
+    //     if ($stages[$i] == 0) {
+    //         $startFound = true;
+    //         break;
+    //     }
+    // }
+
+
     // bail if do not have an timeWindow of data
     if (!$startFound) {
         return false;
@@ -58,6 +67,15 @@ function aggrigateStage($timeWindow, $index, &$times, &$stages, &$stagesTimeOn) 
             $stagesTimeOn[3] += $deltaTime;
         }
     }
+
+    // if the last stage was 0, don't add its delta time
+    if($stages[$index-1] == 0) {
+        $stagesTimeOn[0] -= $deltaTime;
+    }
+    if($stagesTimeOn[0] < 1) {
+        $stagesTimeOn[0] = 1; // prevent divide by zero
+    }
+    
     return true;
 }
 
@@ -87,7 +105,7 @@ $startTime = $endTime - ($hours * 3600);
 // echo "startTime = $startTime, endTime = $endTime\n";
 
 // Query database
-$db = open_database();
+$db = openDatabase();
 $result = $db->query("SELECT time, stage, temperature, humidity FROM hvac WHERE time >= $startTime AND time <= $endTime ORDER BY time ASC");
 
 $times = [];
@@ -101,7 +119,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     $humidities[] = $row['humidity'];
     $stages[] = $row['stage'];
 }
-close_database($db);
+closeDatabase($db);
 
 $total = count($stages);
 
@@ -394,10 +412,11 @@ $layout = [
         const plotData = <?= json_encode($plotData, JSON_UNESCAPED_SLASHES) ?>;
         const layout = <?= json_encode($layout, JSON_UNESCAPED_SLASHES) ?>;
 
-        const currentTemp = <?= (string) $temps[$total-1] ?>;
-        const currentHumidity = <?= (string) $humidities[$total-1] ?>;
-        const currentStage = <?= (string) $stages[$total-1] ?>;
         const dataPointCount = <?= (string) $total ?>;
+
+        const currentTemp = <?= ($total > 0) ? (string) $temps[$total-1] : 0 ?>;
+        const currentHumidity = <?= ($total > 0) ? (string) $humidities[$total-1] : 0 ?>;
+        const currentStage = <?= ($total > 0) ? (string) $stages[$total-1] : 0 ?>;
 
         function renderGraph(data, layout) {
             Plotly.newPlot('graph', data, layout, {responsive: true});

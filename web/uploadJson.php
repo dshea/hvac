@@ -38,14 +38,14 @@ if (!hash_equals((string)$expectedUser, (string)($user ?? '')) || !hash_equals((
 $dest_dir = __DIR__ . DIRECTORY_SEPARATOR;
 
 // sanitize a filename (keep only safe chars)
-function safe_filename($name) {
+function safeFilename($name) {
     $name = basename($name);
     $name = preg_replace('/[^A-Za-z0-9._-]/', '_', $name);
     return $name;
 }
 
 // generate a default filename
-function default_filename() {
+function defaultFilename() {
     return date('Y-m-d_T_H-i-s') . '.json';
 }
 
@@ -63,8 +63,8 @@ if ($method === 'POST') {
         respond(400, ['status' => 'error', 'message' => 'Upload error code: ' . $f['error']]);
     }
 
-    $orig = isset($f['name']) ? $f['name'] : default_filename();
-    $name = safe_filename($orig);
+    $orig = isset($f['name']) ? $f['name'] : defaultFilename();
+    $name = safeFilename($orig);
     $target = $dest_dir . $name;
 
     if (!move_uploaded_file($f['tmp_name'], $target)) {
@@ -90,7 +90,7 @@ if ($method === 'POST') {
     }
 
     // choose filename from query param or default
-    $name = isset($_GET['filename']) ? safe_filename($_GET['filename']) : default_filename();
+    $name = isset($_GET['filename']) ? safeFilename($_GET['filename']) : defaultFilename();
     $target = $dest_dir . $name;
 
     if (file_put_contents($target, $content) === false) {
@@ -103,17 +103,17 @@ if ($method === 'POST') {
 }
 
 if ($name !== '') {
-    $db = open_database();
+    $db = openDatabase();
     if ($db === false) {
         respond(500, ['status' => 'error', 'message' => 'Failed to open database']);
     } else {
-        $status = add_json($db, $content);
+        $status = addJson($db, $content);
         if ($status === false) {
             respond(400, ['status' => 'error', 'message' => 'Failed to add records from file = ' . $name]);
         } else {
             respond(200, ['status' => 'ok', 'filename' => $name]);
         }
-        close_database($db);
+        closeDatabase($db);
     }
 }
 

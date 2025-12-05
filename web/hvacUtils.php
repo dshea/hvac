@@ -3,7 +3,7 @@
 // global variable for printing error messages
 $debug = false;
 
-function log_msg($msg) {
+function logMessage($msg) {
   global $debug;
   if($debug) {
     echo $msg, "<br>";
@@ -17,7 +17,7 @@ class HvacDB extends SQLite3 {
   }
 }
 
-function open_database() {
+function openDatabase() {
   $db = false;
   if(file_exists('hvac.db')) {
     $db = new HvacDB();
@@ -34,40 +34,40 @@ EOF;
 
     $ret = $db->exec($sql);
     if(!$ret){
-      log_msg($db->lastErrorMsg());
+      logMessage($db->lastErrorMsg());
       die();
     }
   } // database does not exist
   return $db;
 }
 
-function close_database($db) {
+function closeDatabase($db) {
   $db->close();
 }
 
-function add_record($db, $rec) {
+function addRecord($db, $rec) {
   if(count($rec) != 4) {
-    log_msg("Bad num elements - " . implode(",", $rec));
+    logMessage("Bad num elements - " . implode(",", $rec));
     return false;
   }
 
   if(!is_int($rec[0])) {
-    log_msg("0 not int - " . implode(",", $rec));
+    logMessage("0 not int - " . implode(",", $rec));
     return false;
   }
 
   if(!is_int($rec[1])) {
-    log_msg("1 not int - " . implode(",", $rec));
+    logMessage("1 not int - " . implode(",", $rec));
     return false;
   }
 
   if(!is_float($rec[2])) {
-    log_msg("2 not float - " . implode(",", $rec));
+    logMessage("2 not float - " . implode(",", $rec));
     return false;
   }
 
   if(!is_float($rec[3])) {
-    log_msg("3 not float - " . implode(",", $rec));
+    logMessage("3 not float - " . implode(",", $rec));
     return false;
   }
 
@@ -76,7 +76,7 @@ function add_record($db, $rec) {
 
   $ret = $db->exec($sql);
   if(!$ret) {
-    log_msg($db->lastErrorMsg() . " - " . implode(",", $rec));
+    logMessage($db->lastErrorMsg() . " - " . implode(",", $rec));
     if(strpos($db->lastErrorMsg(), 'UNIQUE constraint failed') !== false) {
       // ignore duplicate primary key errors
       return true;
@@ -86,25 +86,25 @@ function add_record($db, $rec) {
   return true;
 }
 
-function add_json($db, $json_str) {
+function addJson($db, $json_str) {
   $data = json_decode($json_str);
   if(!is_array($data)) {
-    log_msg("json is not an array");
+    logMessage("json is not an array");
     return false;
   }
 
   $ret = true;
   // loop json string
   foreach($data as $rec) {
-    if(!add_record($db, $rec)) {
+    if(!addRecord($db, $rec)) {
       $ret = false;
     }
   }
 
   if ($ret === true) {
-    log_msg("add num records = " . count($data));
+    logMessage("add num records = " . count($data));
   } else {
-    log_msg("adding records failed");
+    logMessage("adding records failed");
   } 
 
   return $ret;
