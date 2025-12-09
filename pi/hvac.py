@@ -122,9 +122,10 @@ def run():
         t1 = time()
         if(t1 - lastSendTime > uploadDelay):
             jsonStr = makeJson(lastSendTime)
-            if(sendJson(jsonStr)):
-                lastSendTime = t1
-                writeTimeFile(lastSendTime)
+            if(jsonStr != "[]"):
+                if(sendJson(jsonStr)):
+                    lastSendTime = t1
+                    writeTimeFile(lastSendTime)
 
 if __name__ == '__main__':
     run()

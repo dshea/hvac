@@ -62,7 +62,11 @@ if __name__ == '__main__':
     if len(sys.argv) == 2 :
         db_filename = sys.argv[1]
 
-#    print(makeJson(1613064675))
-    dumpDatabase()
+    if(True) :
+        jsonStr = makeJson(1613068957)
+        if(jsonStr != "[]") :
+            print(jsonStr)
+    else :
+        dumpDatabase()
 
     

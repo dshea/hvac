@@ -1,4 +1,4 @@
 .DS_Store
 hvac*.db
 hvac.log
-
+lastJsonWrite.txt
