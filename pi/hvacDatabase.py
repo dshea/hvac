@@ -62,7 +62,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2 :
         db_filename = sys.argv[1]
 
-    if(True) :
+    if(False) :
         jsonStr = makeJson(1613068957)
         if(jsonStr != "[]") :
             print(jsonStr)

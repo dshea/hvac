@@ -101,9 +101,7 @@ function addJson($db, $json_str) {
     }
   }
 
-  if ($ret === true) {
-    logMessage("add num records = " . count($data));
-  } else {
+  if ($ret === false) {
     logMessage("adding records failed");
   } 
 
